@@ -1,0 +1,122 @@
+.finder-page {
+  min-height: calc(100vh - 73px);
+  padding: 48px 24px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 70, 85, 0.18), transparent 34rem),
+    #0f172a;
+  color: #f8fafc;
+}
+
+.finder-container {
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+.finder-header {
+  margin-bottom: 32px;
+}
+
+.finder-eyebrow {
+  margin: 0 0 8px;
+  color: #ff4655;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.finder-header h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 4.8rem);
+}
+
+.finder-header p {
+  max-width: 720px;
+  color: #cbd5e1;
+  line-height: 1.7;
+}
+
+.finder-current-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.finder-current-card div,
+.finder-card {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.78);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
+.finder-current-card div {
+  padding: 20px;
+}
+
+.finder-current-card span,
+.finder-card span {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.finder-current-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.8rem;
+}
+
+.finder-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.finder-card {
+  padding: 24px;
+}
+
+.finder-card p {
+  margin: 0 0 10px;
+  color: #ff4655;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.finder-card h2 {
+  margin: 0;
+  font-size: 3rem;
+}
+
+.finder-card button {
+  width: 100%;
+  margin-top: 24px;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  background: #ff4655;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.finder-card button:hover {
+  filter: brightness(1.08);
+}
+
+.finder-card small {
+  display: block;
+  margin-top: 12px;
+  color: #86efac;
+  font-weight: 700;
+}
+
+@media (max-width: 820px) {
+  .finder-current-card,
+  .finder-grid {
+    grid-template-columns: 1fr;
+  }
+}
