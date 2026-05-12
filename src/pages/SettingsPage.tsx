@@ -5,11 +5,22 @@ import {
   saveSettings,
 } from "../features/settings/settingsStorage";
 import type { UserSettings } from "../features/settings/settingsTypes";
+import {
+  calculateEdpi,
+  getSensitivitySuggestions,
+} from "../features/sensitivity/calculateSensitivity";
 import "./SettingsPage.css";
 
 function SettingsPage() {
   const [settings, setSettings] = useState<UserSettings>(() => loadSettings());
   const [savedMessage, setSavedMessage] = useState("");
+
+  const currentEdpi = calculateEdpi(
+    settings.dpi,
+    settings.valorantSensitivity,
+  );
+
+  const sensitivitySuggestions = getSensitivitySuggestions(settings.dpi);
 
   function updateSetting<K extends keyof UserSettings>(
     key: K,
@@ -19,6 +30,8 @@ function SettingsPage() {
       ...currentSettings,
       [key]: value,
     }));
+
+    setSavedMessage("");
   }
 
   function handleSave() {
@@ -36,7 +49,7 @@ function SettingsPage() {
     <main className="settings-page">
       <div className="settings-container">
         <header className="settings-header">
-          <p className="settings-eyebrow">Valorant Aim Trainer</p>
+          <p className="settings-eyebrow">vTune AIM</p>
           <h1>Settings</h1>
           <p>
             Configure your aim profile before running sensitivity assessments
@@ -75,7 +88,7 @@ function SettingsPage() {
                   )
                 }
               />
-              <small>Your current in-game Valorant sensitivity.</small>
+              <small>Current eDPI: {currentEdpi}</small>
             </label>
 
             <label className="settings-field">
@@ -93,6 +106,18 @@ function SettingsPage() {
               />
               <small>Used later for cm/360 recommendations.</small>
             </label>
+
+            <div className="sensitivity-preview">
+              <h3>Suggested starting points</h3>
+
+              {sensitivitySuggestions.map((suggestion) => (
+                <div className="sensitivity-row" key={suggestion.label}>
+                  <span>{suggestion.label}</span>
+                  <strong>{suggestion.valorantSensitivity}</strong>
+                  <small>{suggestion.edpi} eDPI</small>
+                </div>
+              ))}
+            </div>
           </section>
 
           <section className="settings-card">
@@ -105,7 +130,9 @@ function SettingsPage() {
                 onChange={(event) =>
                   updateSetting(
                     "trainingDuration",
-                    Number(event.target.value) as UserSettings["trainingDuration"],
+                    Number(
+                      event.target.value,
+                    ) as UserSettings["trainingDuration"],
                   )
                 }
               >
@@ -141,9 +168,11 @@ function SettingsPage() {
 
         <div className="settings-actions">
           {savedMessage && <p>{savedMessage}</p>}
+
           <button className="settings-button" onClick={handleReset}>
             Reset
           </button>
+
           <button className="settings-button" onClick={handleSave}>
             Save Settings
           </button>

@@ -133,3 +133,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+.sensitivity-preview {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.sensitivity-preview h3 {
+  margin: 0 0 14px;
+  font-size: 1rem;
+}
+
+.sensitivity-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  color: #cbd5e1;
+}
+
+.sensitivity-row strong {
+  color: #f8fafc;
+}
+
+.sensitivity-row small {
+  color: #94a3b8;
+}
