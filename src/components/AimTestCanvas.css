@@ -1,0 +1,46 @@
+.aim-test {
+  display: grid;
+  gap: 18px;
+}
+
+.aim-test-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.aim-test-stats div {
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.78);
+}
+
+.aim-test-stats span {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.aim-test-stats strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.7rem;
+}
+
+.aim-test-canvas {
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 24px;
+  background: #020617;
+  cursor: crosshair;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
+@media (max-width: 720px) {
+  .aim-test-stats {
+    grid-template-columns: 1fr;
+  }
+}
