@@ -104,8 +104,7 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
 
   useEffect(() => {
     function handlePointerMove(event: MouseEvent) {
-      if (!isSessionActive) return;
-      if (!isPointerLocked) return;
+      if (!isSessionActive || !isPointerLocked) return;
 
       setCrosshairPosition((currentPosition) => ({
         x: Math.min(
@@ -206,6 +205,7 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
 
     drawGrid(context);
     drawCenterMarker(context);
+    drawCenterResetCircle(context);
     drawModeGuide(context);
 
     if (!isSessionActive) {
@@ -258,6 +258,23 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
     context.beginPath();
     context.moveTo(centerX, centerY - 10);
     context.lineTo(centerX, centerY + 10);
+    context.stroke();
+  }
+
+  function drawCenterResetCircle(context: CanvasRenderingContext2D) {
+    const centerX = CANVAS_WIDTH / 2;
+    const centerY = CANVAS_HEIGHT / 2;
+    const radius = DIFFICULTY_CENTER_RADIUS[selectedDifficulty];
+
+    context.beginPath();
+    context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+
+    context.strokeStyle =
+      usesResetTarget(selectedMode) && centerResetStep === "center"
+        ? "rgba(134, 239, 172, 0.9)"
+        : "rgba(248, 250, 252, 0.22)";
+
+    context.lineWidth = 2;
     context.stroke();
   }
 
@@ -318,6 +335,10 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
   }
 
   function drawTarget(context: CanvasRenderingContext2D) {
+    if (usesResetTarget(selectedMode) && centerResetStep === "center") {
+      return;
+    }
+
     context.beginPath();
     context.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
     context.fillStyle = "#ff4655";
@@ -377,6 +398,11 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
   function handleCanvasClick() {
     if (!isSessionActive) return;
 
+    const isCenterResetTarget =
+      usesResetTarget(selectedMode) && centerResetStep === "center";
+
+    if (isCenterResetTarget) return;
+
     const distance = Math.hypot(
       crosshairPosition.x - target.x,
       crosshairPosition.y - target.y,
@@ -384,25 +410,17 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
 
     const isHit = distance <= target.radius;
 
-    const isCenterResetTarget =
-      usesResetTarget(selectedMode) && centerResetStep === "center";
-
-    if (!isCenterResetTarget) {
-      setStats((currentStats) => ({
-        hits: currentStats.hits + (isHit ? 1 : 0),
-        misses: currentStats.misses + (isHit ? 0 : 1),
-        totalClicks: currentStats.totalClicks + 1,
-      }));
-    }
+    setStats((currentStats) => ({
+      hits: currentStats.hits + (isHit ? 1 : 0),
+      misses: currentStats.misses + (isHit ? 0 : 1),
+      totalClicks: currentStats.totalClicks + 1,
+    }));
 
     if (!isHit) return;
 
     if (usesResetTarget(selectedMode)) {
-      const nextStep = centerResetStep === "outer" ? "center" : "outer";
-
-      setCenterResetStep(nextStep);
-      setTarget(createNextTarget(selectedMode, nextStep));
-
+      setCenterResetStep("center");
+      setTarget(createNextTarget(selectedMode, "center"));
       return;
     }
 
@@ -415,11 +433,11 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
     if (centerResetStep !== "center") return;
 
     const distance = Math.hypot(
-      crosshairPosition.x - target.x,
-      crosshairPosition.y - target.y,
+      crosshairPosition.x - CANVAS_WIDTH / 2,
+      crosshairPosition.y - CANVAS_HEIGHT / 2,
     );
 
-    if (distance > target.radius) return;
+    if (distance > DIFFICULTY_CENTER_RADIUS[selectedDifficulty]) return;
 
     setCenterResetStep("outer");
     setTarget(createNextTarget(selectedMode, "outer"));
