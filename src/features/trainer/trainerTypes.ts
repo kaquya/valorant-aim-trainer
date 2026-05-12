@@ -10,3 +10,5 @@ export type AimTestStats = {
   misses: number;
   totalClicks: number;
 };
+
+export type TrainerDifficulty = "easy" | "normal" | "hard";
