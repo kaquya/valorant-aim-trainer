@@ -27,12 +27,23 @@ const DIFFICULTY_CENTER_RADIUS: Record<TrainerDifficulty, number> = {
   hard: 13,
 };
 
-function AimTestCanvas() {
+type AimTestCanvasProps = {
+  activeSensitivity?: number;
+  activeEdpi?: number;
+};
+
+function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const settingsRef = useRef(loadSettings());
   const settings = settingsRef.current;
   const sessionDuration = settings.trainingDuration;
+
+  const displayedSensitivity =
+    activeSensitivity ?? settings.valorantSensitivity;
+
+  const displayedEdpi =
+    activeEdpi ?? Math.round(settings.dpi * settings.valorantSensitivity);
 
   const [selectedMode, setSelectedMode] =
     useState<TrainerModeId>("microflicks");
@@ -410,6 +421,16 @@ function AimTestCanvas() {
         <div>
           <span>Difficulty</span>
           <strong>{DIFFICULTY_LABELS[selectedDifficulty]}</strong>
+        </div>
+
+        <div>
+          <span>Active Sens</span>
+          <strong>{displayedSensitivity}</strong>
+        </div>
+
+        <div>
+          <span>eDPI</span>
+          <strong>{displayedEdpi}</strong>
         </div>
 
         <div>
