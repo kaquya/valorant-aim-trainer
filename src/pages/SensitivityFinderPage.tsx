@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { generateSensitivityCandidates } from "../features/assessment/generateSensitivityCandidates";
+import SensitivityAssessmentCanvas from "../components/SensitivityAssessmentCanvas";
 import {
   loadSettings,
   saveSettings,
@@ -7,40 +7,51 @@ import {
 import type { UserSettings } from "../features/settings/settingsTypes";
 import "./SensitivityFinderPage.css";
 
-type FinderStep = "select" | "ready" | "saved";
+type AssessmentResult = {
+  hits: number;
+  misses: number;
+  totalShots: number;
+  accuracy: number;
+  overflicks: number;
+  underflicks: number;
+  recommendation: "lower" | "higher" | "keep";
+  recommendedSensitivity: number;
+};
 
 function SensitivityFinderPage() {
   const [settings, setSettings] = useState<UserSettings>(() => loadSettings());
-  const [activeCandidateId, setActiveCandidateId] = useState<string | null>(
-    null,
-  );
-  const [finderStep, setFinderStep] = useState<FinderStep>("select");
+  const [assessmentResult, setAssessmentResult] =
+    useState<AssessmentResult | null>(null);
+  const [savedMessage, setSavedMessage] = useState("");
 
-  const candidates = generateSensitivityCandidates(
-    settings.dpi,
-    settings.valorantSensitivity,
-  );
-
-  const activeCandidate = candidates.find(
-    (candidate) => candidate.id === activeCandidateId,
-  );
-
-  function handleSelectCandidate(candidateId: string) {
-    setActiveCandidateId(candidateId);
-    setFinderStep("ready");
+  function handleAssessmentComplete(result: AssessmentResult) {
+    setAssessmentResult(result);
+    setSavedMessage("");
   }
 
-  function handleSaveCandidate() {
-    if (!activeCandidate) return;
+  function handleSaveRecommendedSensitivity() {
+    if (!assessmentResult) return;
 
     const updatedSettings: UserSettings = {
       ...settings,
-      valorantSensitivity: activeCandidate.valorantSensitivity,
+      valorantSensitivity: assessmentResult.recommendedSensitivity,
     };
 
     setSettings(updatedSettings);
     saveSettings(updatedSettings);
-    setFinderStep("saved");
+    setSavedMessage("Recommended sensitivity saved to settings.");
+  }
+
+  function getRecommendationText(result: AssessmentResult) {
+    if (result.recommendation === "lower") {
+      return "Your movement often passes the target. Try lowering your sensitivity slightly.";
+    }
+
+    if (result.recommendation === "higher") {
+      return "Your movement often stops before the target. Try raising your sensitivity slightly.";
+    }
+
+    return "Your movement looks balanced. Keeping your current sensitivity is recommended.";
   }
 
   return (
@@ -50,8 +61,9 @@ function SensitivityFinderPage() {
           <p className="finder-eyebrow">vTune AIM</p>
           <h1>Sensitivity Finder</h1>
           <p>
-            Compare lower, current, and higher Valorant sensitivities. The next
-            step will connect this flow to pointer-lock aim tests.
+            Test your currently applied Valorant sensitivity. Reset to center
+            before each target, then flick and shoot. vTune AIM tracks your
+            movement and recommends whether to lower, raise, or keep your sens.
           </p>
         </header>
 
@@ -74,57 +86,59 @@ function SensitivityFinderPage() {
           </div>
         </section>
 
-        <section className="finder-grid">
-          {candidates.map((candidate) => (
-            <article
-              className={
-                activeCandidateId === candidate.id
-                  ? "finder-card is-active"
-                  : "finder-card"
-              }
-              key={candidate.id}
-            >
-              <p>{candidate.label}</p>
-              <h2>{candidate.valorantSensitivity}</h2>
-              <span>{candidate.edpi} eDPI</span>
+        <section className="finder-test-panel">
+          <div>
+            <span>Assessment Mode</span>
+            <strong>Reset Flick</strong>
+            <p>60 seconds</p>
+          </div>
 
-              <button
-                type="button"
-                onClick={() => handleSelectCandidate(candidate.id)}
-              >
-                Select for test
-              </button>
-            </article>
-          ))}
+          <div>
+            <h2>How it works</h2>
+            <p>
+              Hover the center reset marker first. A target appears after reset.
+              Flick to the target and click. The test analyzes movement before
+              the click, so overflicks and underflicks are detected from your
+              mouse movement, not only from missed shots.
+            </p>
+          </div>
         </section>
 
-        {finderStep !== "select" && activeCandidate && (
-          <section className="finder-test-panel">
+        <SensitivityAssessmentCanvas
+          dpi={settings.dpi}
+          sensitivity={settings.valorantSensitivity}
+          onComplete={handleAssessmentComplete}
+        />
+
+        {assessmentResult && (
+          <section className="finder-result-panel">
             <div>
-              <span>Selected Sens</span>
-              <strong>{activeCandidate.valorantSensitivity}</strong>
-              <p>{activeCandidate.edpi} eDPI</p>
+              <span>Recommended Sens</span>
+              <strong>{assessmentResult.recommendedSensitivity}</strong>
+              <p>{assessmentResult.recommendation}</p>
             </div>
 
             <div>
-              <h2>Ready to test</h2>
-              <p>
-                This selected sensitivity will be used for the upcoming
-                pointer-lock assessment mode.
-              </p>
+              <h2>Assessment Result</h2>
+              <p>{getRecommendationText(assessmentResult)}</p>
+
+              <div className="finder-result-stats">
+                <span>Accuracy: {assessmentResult.accuracy}%</span>
+                <span>Hits: {assessmentResult.hits}</span>
+                <span>Misses: {assessmentResult.misses}</span>
+                <span>Shots: {assessmentResult.totalShots}</span>
+                <span>Overflicks: {assessmentResult.overflicks}</span>
+                <span>Underflicks: {assessmentResult.underflicks}</span>
+              </div>
             </div>
 
-            <button type="button" onClick={handleSaveCandidate}>
-              Save as current sens
+            <button type="button" onClick={handleSaveRecommendedSensitivity}>
+              Apply recommended sens
             </button>
           </section>
         )}
 
-        {finderStep === "saved" && (
-          <p className="finder-saved-message">
-            Saved. Your current Valorant sensitivity has been updated.
-          </p>
-        )}
+        {savedMessage && <p className="finder-saved-message">{savedMessage}</p>}
       </div>
     </main>
   );
