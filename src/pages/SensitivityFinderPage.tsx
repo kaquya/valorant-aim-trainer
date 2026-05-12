@@ -1,35 +1,57 @@
 import { useState } from "react";
+import SensitivityAssessmentCanvas from "../components/SensitivityAssessmentCanvas";
 import {
   loadSettings,
   saveSettings,
 } from "../features/settings/settingsStorage";
 import type { UserSettings } from "../features/settings/settingsTypes";
-import {
-  calculateEdpi,
-  getSensitivitySuggestions,
-} from "../features/sensitivity/calculateSensitivity";
 import "./SensitivityFinderPage.css";
+
+type AssessmentResult = {
+  hits: number;
+  misses: number;
+  totalShots: number;
+  accuracy: number;
+  overflicks: number;
+  underflicks: number;
+  recommendation: "lower" | "higher" | "keep";
+  recommendedSensitivity: number;
+};
 
 function SensitivityFinderPage() {
   const [settings, setSettings] = useState<UserSettings>(() => loadSettings());
-  const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+  const [assessmentResult, setAssessmentResult] =
+    useState<AssessmentResult | null>(null);
+  const [savedMessage, setSavedMessage] = useState("");
 
-  const currentEdpi = calculateEdpi(
-    settings.dpi,
-    settings.valorantSensitivity,
-  );
+  function handleAssessmentComplete(result: AssessmentResult) {
+    setAssessmentResult(result);
+    setSavedMessage("");
+  }
 
-  const suggestions = getSensitivitySuggestions(settings.dpi);
+  function handleSaveRecommendedSensitivity() {
+    if (!assessmentResult) return;
 
-  function handleUseSensitivity(valorantSensitivity: number, label: string) {
     const updatedSettings: UserSettings = {
       ...settings,
-      valorantSensitivity,
+      valorantSensitivity: assessmentResult.recommendedSensitivity,
     };
 
     setSettings(updatedSettings);
     saveSettings(updatedSettings);
-    setSelectedLabel(label);
+    setSavedMessage("Recommended sensitivity saved to settings.");
+  }
+
+  function getRecommendationText(result: AssessmentResult) {
+    if (result.recommendation === "lower") {
+      return "Your movement often passes the target. Try lowering your sensitivity slightly.";
+    }
+
+    if (result.recommendation === "higher") {
+      return "Your movement often stops before the target. Try raising your sensitivity slightly.";
+    }
+
+    return "Your movement looks balanced. Keeping your current sensitivity is recommended.";
   }
 
   return (
@@ -39,9 +61,9 @@ function SensitivityFinderPage() {
           <p className="finder-eyebrow">vTune AIM</p>
           <h1>Sensitivity Finder</h1>
           <p>
-            Start with one of these Valorant sensitivity ranges. Later, this
-            page will run aim assessments and automatically recommend the best
-            option.
+            Test your currently applied Valorant sensitivity. Reset to center
+            before each target, then flick and shoot. vTune AIM tracks your
+            movement and recommends whether to lower, raise, or keep your sens.
           </p>
         </header>
 
@@ -58,35 +80,65 @@ function SensitivityFinderPage() {
 
           <div>
             <span>Current eDPI</span>
-            <strong>{currentEdpi}</strong>
+            <strong>
+              {Math.round(settings.dpi * settings.valorantSensitivity)}
+            </strong>
           </div>
         </section>
 
-        <section className="finder-grid">
-          {suggestions.map((suggestion) => (
-            <article className="finder-card" key={suggestion.label}>
-              <p>{suggestion.label}</p>
-              <h2>{suggestion.valorantSensitivity}</h2>
-              <span>{suggestion.edpi} eDPI</span>
+        <section className="finder-test-panel">
+          <div>
+            <span>Assessment Mode</span>
+            <strong>Reset Flick</strong>
+            <p>60 seconds</p>
+          </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  handleUseSensitivity(
-                    suggestion.valorantSensitivity,
-                    suggestion.label,
-                  )
-                }
-              >
-                Use this sens
-              </button>
-
-              {selectedLabel === suggestion.label && (
-                <small>Saved as current sensitivity.</small>
-              )}
-            </article>
-          ))}
+          <div>
+            <h2>How it works</h2>
+            <p>
+              Hover the center reset marker first. A target appears after reset.
+              Flick to the target and click. The test analyzes movement before
+              the click, so overflicks and underflicks are detected from your
+              mouse movement, not only from missed shots.
+            </p>
+          </div>
         </section>
+
+        <SensitivityAssessmentCanvas
+          dpi={settings.dpi}
+          sensitivity={settings.valorantSensitivity}
+          onComplete={handleAssessmentComplete}
+        />
+
+        {assessmentResult && (
+          <section className="finder-result-panel">
+            <div>
+              <span>Recommended Sens</span>
+              <strong>{assessmentResult.recommendedSensitivity}</strong>
+              <p>{assessmentResult.recommendation}</p>
+            </div>
+
+            <div>
+              <h2>Assessment Result</h2>
+              <p>{getRecommendationText(assessmentResult)}</p>
+
+              <div className="finder-result-stats">
+                <span>Accuracy: {assessmentResult.accuracy}%</span>
+                <span>Hits: {assessmentResult.hits}</span>
+                <span>Misses: {assessmentResult.misses}</span>
+                <span>Shots: {assessmentResult.totalShots}</span>
+                <span>Overflicks: {assessmentResult.overflicks}</span>
+                <span>Underflicks: {assessmentResult.underflicks}</span>
+              </div>
+            </div>
+
+            <button type="button" onClick={handleSaveRecommendedSensitivity}>
+              Apply recommended sens
+            </button>
+          </section>
+        )}
+
+        {savedMessage && <p className="finder-saved-message">{savedMessage}</p>}
       </div>
     </main>
   );

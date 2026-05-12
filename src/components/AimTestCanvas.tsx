@@ -14,6 +14,7 @@ import "./AimTestCanvas.css";
 
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 520;
+const BASELINE_SENSITIVITY = 0.4;
 
 const DIFFICULTY_LABELS: Record<TrainerDifficulty, string> = {
   easy: "Easy",
@@ -27,12 +28,25 @@ const DIFFICULTY_CENTER_RADIUS: Record<TrainerDifficulty, number> = {
   hard: 13,
 };
 
-function AimTestCanvas() {
+type AimTestCanvasProps = {
+  activeSensitivity?: number;
+  activeEdpi?: number;
+};
+
+function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const settingsRef = useRef(loadSettings());
   const settings = settingsRef.current;
   const sessionDuration = settings.trainingDuration;
+
+  const displayedSensitivity =
+    activeSensitivity ?? settings.valorantSensitivity;
+
+  const displayedEdpi =
+    activeEdpi ?? Math.round(settings.dpi * settings.valorantSensitivity);
+
+  const sensitivityMultiplier = displayedSensitivity / BASELINE_SENSITIVITY;
 
   const [selectedMode, setSelectedMode] =
     useState<TrainerModeId>("microflicks");
@@ -48,6 +62,13 @@ function AimTestCanvas() {
     createModeTarget(CANVAS_WIDTH, CANVAS_HEIGHT, "microflicks", "normal"),
   );
 
+  const [crosshairPosition, setCrosshairPosition] = useState({
+    x: CANVAS_WIDTH / 2,
+    y: CANVAS_HEIGHT / 2,
+  });
+
+  const [isPointerLocked, setIsPointerLocked] = useState(false);
+
   const [stats, setStats] = useState<AimTestStats>({
     hits: 0,
     misses: 0,
@@ -60,7 +81,59 @@ function AimTestCanvas() {
 
   useEffect(() => {
     drawCanvas();
-  }, [target, stats, isSessionActive, selectedMode, selectedDifficulty]);
+  }, [
+    target,
+    stats,
+    isSessionActive,
+    selectedMode,
+    selectedDifficulty,
+    crosshairPosition,
+  ]);
+
+  useEffect(() => {
+    function handlePointerLockChange() {
+      setIsPointerLocked(document.pointerLockElement === canvasRef.current);
+    }
+
+    document.addEventListener("pointerlockchange", handlePointerLockChange);
+
+    return () => {
+      document.removeEventListener("pointerlockchange", handlePointerLockChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    function handlePointerMove(event: MouseEvent) {
+      if (!isSessionActive || !isPointerLocked) return;
+
+      setCrosshairPosition((currentPosition) => ({
+        x: Math.min(
+          CANVAS_WIDTH,
+          Math.max(
+            0,
+            currentPosition.x + event.movementX * sensitivityMultiplier,
+          ),
+        ),
+        y: Math.min(
+          CANVAS_HEIGHT,
+          Math.max(
+            0,
+            currentPosition.y + event.movementY * sensitivityMultiplier,
+          ),
+        ),
+      }));
+    }
+
+    document.addEventListener("mousemove", handlePointerMove);
+
+    return () => {
+      document.removeEventListener("mousemove", handlePointerMove);
+    };
+  }, [isSessionActive, isPointerLocked, sensitivityMultiplier]);
+
+  useEffect(() => {
+    handleCenterResetHover();
+  }, [crosshairPosition]);
 
   useEffect(() => {
     if (!isSessionActive) return;
@@ -68,6 +141,7 @@ function AimTestCanvas() {
     if (timeLeft <= 0) {
       setIsSessionActive(false);
       setHasSessionFinished(true);
+      document.exitPointerLock();
       return;
     }
 
@@ -80,6 +154,13 @@ function AimTestCanvas() {
 
   function usesResetTarget(mode: TrainerModeId) {
     return mode === "center-reset" || mode === "angle-clear";
+  }
+
+  function resetCrosshair() {
+    setCrosshairPosition({
+      x: CANVAS_WIDTH / 2,
+      y: CANVAS_HEIGHT / 2,
+    });
   }
 
   function createNextTarget(mode: TrainerModeId, step: "center" | "outer") {
@@ -107,6 +188,8 @@ function AimTestCanvas() {
     setHasSessionFinished(false);
     setTimeLeft(sessionDuration);
     setStats({ hits: 0, misses: 0, totalClicks: 0 });
+    resetCrosshair();
+    document.exitPointerLock();
   }
 
   function drawCanvas() {
@@ -122,6 +205,7 @@ function AimTestCanvas() {
 
     drawGrid(context);
     drawCenterMarker(context);
+    drawCenterResetCircle(context);
     drawModeGuide(context);
 
     if (!isSessionActive) {
@@ -137,6 +221,7 @@ function AimTestCanvas() {
     }
 
     drawTarget(context);
+    drawCrosshair(context);
   }
 
   function drawGrid(context: CanvasRenderingContext2D) {
@@ -173,6 +258,23 @@ function AimTestCanvas() {
     context.beginPath();
     context.moveTo(centerX, centerY - 10);
     context.lineTo(centerX, centerY + 10);
+    context.stroke();
+  }
+
+  function drawCenterResetCircle(context: CanvasRenderingContext2D) {
+    const centerX = CANVAS_WIDTH / 2;
+    const centerY = CANVAS_HEIGHT / 2;
+    const radius = DIFFICULTY_CENTER_RADIUS[selectedDifficulty];
+
+    context.beginPath();
+    context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+
+    context.strokeStyle =
+      usesResetTarget(selectedMode) && centerResetStep === "center"
+        ? "rgba(134, 239, 172, 0.9)"
+        : "rgba(248, 250, 252, 0.22)";
+
+    context.lineWidth = 2;
     context.stroke();
   }
 
@@ -233,6 +335,10 @@ function AimTestCanvas() {
   }
 
   function drawTarget(context: CanvasRenderingContext2D) {
+    if (usesResetTarget(selectedMode) && centerResetStep === "center") {
+      return;
+    }
+
     context.beginPath();
     context.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
     context.fillStyle = "#ff4655";
@@ -244,6 +350,21 @@ function AimTestCanvas() {
     context.fill();
   }
 
+  function drawCrosshair(context: CanvasRenderingContext2D) {
+    context.strokeStyle = "#ffffff";
+    context.lineWidth = 2;
+
+    context.beginPath();
+    context.moveTo(crosshairPosition.x - 10, crosshairPosition.y);
+    context.lineTo(crosshairPosition.x + 10, crosshairPosition.y);
+    context.stroke();
+
+    context.beginPath();
+    context.moveTo(crosshairPosition.x, crosshairPosition.y - 10);
+    context.lineTo(crosshairPosition.x, crosshairPosition.y + 10);
+    context.stroke();
+  }
+
   function startSession() {
     setStats({ hits: 0, misses: 0, totalClicks: 0 });
 
@@ -251,10 +372,13 @@ function AimTestCanvas() {
 
     setCenterResetStep(firstStep);
     setTarget(createNextTarget(selectedMode, firstStep));
+    resetCrosshair();
 
     setTimeLeft(sessionDuration);
     setHasSessionFinished(false);
     setIsSessionActive(true);
+
+    canvasRef.current?.requestPointerLock();
   }
 
   function resetSession() {
@@ -271,73 +395,49 @@ function AimTestCanvas() {
     resetRunState(selectedMode, difficulty);
   }
 
-  function handleCanvasClick(event: React.MouseEvent<HTMLCanvasElement>) {
+  function handleCanvasClick() {
     if (!isSessionActive) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-
-    const scaleX = CANVAS_WIDTH / rect.width;
-    const scaleY = CANVAS_HEIGHT / rect.height;
-
-    const clickX = (event.clientX - rect.left) * scaleX;
-    const clickY = (event.clientY - rect.top) * scaleY;
-
-    const distance = Math.hypot(clickX - target.x, clickY - target.y);
-    const isHit = distance <= target.radius;
 
     const isCenterResetTarget =
       usesResetTarget(selectedMode) && centerResetStep === "center";
 
-    if (!isCenterResetTarget) {
-      setStats((currentStats) => ({
-        hits: currentStats.hits + (isHit ? 1 : 0),
-        misses: currentStats.misses + (isHit ? 0 : 1),
-        totalClicks: currentStats.totalClicks + 1,
-      }));
-    }
+    if (isCenterResetTarget) return;
+
+    const distance = Math.hypot(
+      crosshairPosition.x - target.x,
+      crosshairPosition.y - target.y,
+    );
+
+    const isHit = distance <= target.radius;
+
+    setStats((currentStats) => ({
+      hits: currentStats.hits + (isHit ? 1 : 0),
+      misses: currentStats.misses + (isHit ? 0 : 1),
+      totalClicks: currentStats.totalClicks + 1,
+    }));
 
     if (!isHit) return;
 
     if (usesResetTarget(selectedMode)) {
-      const nextStep = centerResetStep === "outer" ? "center" : "outer";
-
-      setCenterResetStep(nextStep);
-      setTarget(createNextTarget(selectedMode, nextStep));
-
+      setCenterResetStep("center");
+      setTarget(createNextTarget(selectedMode, "center"));
       return;
     }
 
     setTarget(createNextTarget(selectedMode, "outer"));
   }
 
-  function handleCanvasMouseMove(
-    event: React.MouseEvent<HTMLCanvasElement>,
-  ) {
+  function handleCenterResetHover() {
     if (!isSessionActive) return;
-
     if (!usesResetTarget(selectedMode)) return;
-
     if (centerResetStep !== "center") return;
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const distance = Math.hypot(
+      crosshairPosition.x - CANVAS_WIDTH / 2,
+      crosshairPosition.y - CANVAS_HEIGHT / 2,
+    );
 
-    const rect = canvas.getBoundingClientRect();
-
-    const scaleX = CANVAS_WIDTH / rect.width;
-    const scaleY = CANVAS_HEIGHT / rect.height;
-
-    const mouseX = (event.clientX - rect.left) * scaleX;
-    const mouseY = (event.clientY - rect.top) * scaleY;
-
-    const distance = Math.hypot(mouseX - target.x, mouseY - target.y);
-
-    const isHoveringCenter = distance <= target.radius;
-
-    if (!isHoveringCenter) return;
+    if (distance > DIFFICULTY_CENTER_RADIUS[selectedDifficulty]) return;
 
     setCenterResetStep("outer");
     setTarget(createNextTarget(selectedMode, "outer"));
@@ -413,8 +513,23 @@ function AimTestCanvas() {
         </div>
 
         <div>
+          <span>Active Sens</span>
+          <strong>{displayedSensitivity}</strong>
+        </div>
+
+        <div>
+          <span>eDPI</span>
+          <strong>{displayedEdpi}</strong>
+        </div>
+
+        <div>
           <span>Time Left</span>
           <strong>{timeLeft}s</strong>
+        </div>
+
+        <div>
+          <span>Pointer Lock</span>
+          <strong>{isPointerLocked ? "On" : "Off"}</strong>
         </div>
 
         <div className="aim-test-buttons">
@@ -461,7 +576,6 @@ function AimTestCanvas() {
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
         onClick={handleCanvasClick}
-        onMouseMove={handleCanvasMouseMove}
       />
 
       {hasSessionFinished && (
