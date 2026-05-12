@@ -116,7 +116,7 @@ function SensitivityAssessmentCanvas({
           ),
         };
 
-        analyzeMovement(nextPosition);
+        analyzeMovement(currentPosition, nextPosition);
 
         return nextPosition;
       });
@@ -167,22 +167,28 @@ function SensitivityAssessmentCanvas({
     };
   }
 
-  function analyzeMovement(position: { x: number; y: number }) {
+  function analyzeMovement(
+    previousPosition: { x: number; y: number },
+    nextPosition: { x: number; y: number },
+  ) {
     if (phase !== "target") return;
 
     const analysis = movementAnalysisRef.current;
 
     if (analysis.hasCountedCurrentTarget) return;
 
-    const distanceToTarget = Math.hypot(position.x - target.x, position.y - target.y);
-
-    analysis.closestDistance = Math.min(analysis.closestDistance, distanceToTarget);
-
-    const previousSide = Math.sign(
-      crosshairPosition.x - target.x,
+    const distanceToTarget = Math.hypot(
+      nextPosition.x - target.x,
+      nextPosition.y - target.y,
     );
 
-    const nextSide = Math.sign(position.x - target.x);
+    analysis.closestDistance = Math.min(
+      analysis.closestDistance,
+      distanceToTarget,
+    );
+
+    const previousSide = Math.sign(previousPosition.x - target.x);
+    const nextSide = Math.sign(nextPosition.x - target.x);
 
     if (previousSide !== 0 && nextSide !== 0 && previousSide !== nextSide) {
       analysis.crossedTargetX = true;
@@ -216,6 +222,7 @@ function SensitivityAssessmentCanvas({
     if (!context) return;
 
     context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
     context.fillStyle = "#020617";
     context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -275,9 +282,17 @@ function SensitivityAssessmentCanvas({
 
   function drawCenterReset(context: CanvasRenderingContext2D) {
     context.beginPath();
-    context.arc(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CENTER_RADIUS, 0, Math.PI * 2);
+    context.arc(
+      CANVAS_WIDTH / 2,
+      CANVAS_HEIGHT / 2,
+      CENTER_RADIUS,
+      0,
+      Math.PI * 2,
+    );
     context.strokeStyle =
-      phase === "reset" ? "rgba(134, 239, 172, 0.9)" : "rgba(248, 250, 252, 0.28)";
+      phase === "reset"
+        ? "rgba(134, 239, 172, 0.9)"
+        : "rgba(248, 250, 252, 0.28)";
     context.lineWidth = 2;
     context.stroke();
   }

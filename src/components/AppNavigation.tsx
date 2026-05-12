@@ -5,7 +5,8 @@ function AppNavigation() {
   return (
     <header className="app-navigation">
       <NavLink to="/" className="app-logo">
-        vTune AIM
+        <span>vTune</span>
+        AIM
       </NavLink>
 
       <nav className="app-nav-links">

@@ -6,34 +6,42 @@
   justify-content: space-between;
   align-items: center;
   gap: 24px;
-  padding: 18px 24px;
+  padding: 16px 24px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.16);
   background: rgba(15, 23, 42, 0.86);
   backdrop-filter: blur(14px);
 }
 
 .app-logo {
+  display: inline-flex;
+  gap: 6px;
   color: #f8fafc;
-  font-weight: 900;
+  font-weight: 950;
   text-decoration: none;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
+}
+
+.app-logo span {
+  color: #ff4655;
 }
 
 .app-nav-links {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .app-nav-links a {
-  padding: 8px 12px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
   border-radius: 999px;
   color: #cbd5e1;
-  font-weight: 700;
+  font-weight: 800;
   text-decoration: none;
 }
 
 .app-nav-links a:hover,
 .app-nav-links a.active {
+  border-color: rgba(255, 70, 85, 0.36);
   background: rgba(255, 70, 85, 0.14);
   color: #ffffff;
 }
@@ -47,6 +55,7 @@
   .app-nav-links {
     width: 100%;
     overflow-x: auto;
+    padding-bottom: 2px;
   }
 
   .app-nav-links a {
