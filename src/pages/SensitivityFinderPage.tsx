@@ -1,35 +1,46 @@
 import { useState } from "react";
+import { generateSensitivityCandidates } from "../features/assessment/generateSensitivityCandidates";
 import {
   loadSettings,
   saveSettings,
 } from "../features/settings/settingsStorage";
 import type { UserSettings } from "../features/settings/settingsTypes";
-import {
-  calculateEdpi,
-  getSensitivitySuggestions,
-} from "../features/sensitivity/calculateSensitivity";
 import "./SensitivityFinderPage.css";
+
+type FinderStep = "select" | "ready" | "saved";
 
 function SensitivityFinderPage() {
   const [settings, setSettings] = useState<UserSettings>(() => loadSettings());
-  const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+  const [activeCandidateId, setActiveCandidateId] = useState<string | null>(
+    null,
+  );
+  const [finderStep, setFinderStep] = useState<FinderStep>("select");
 
-  const currentEdpi = calculateEdpi(
+  const candidates = generateSensitivityCandidates(
     settings.dpi,
     settings.valorantSensitivity,
   );
 
-  const suggestions = getSensitivitySuggestions(settings.dpi);
+  const activeCandidate = candidates.find(
+    (candidate) => candidate.id === activeCandidateId,
+  );
 
-  function handleUseSensitivity(valorantSensitivity: number, label: string) {
+  function handleSelectCandidate(candidateId: string) {
+    setActiveCandidateId(candidateId);
+    setFinderStep("ready");
+  }
+
+  function handleSaveCandidate() {
+    if (!activeCandidate) return;
+
     const updatedSettings: UserSettings = {
       ...settings,
-      valorantSensitivity,
+      valorantSensitivity: activeCandidate.valorantSensitivity,
     };
 
     setSettings(updatedSettings);
     saveSettings(updatedSettings);
-    setSelectedLabel(label);
+    setFinderStep("saved");
   }
 
   return (
@@ -39,9 +50,8 @@ function SensitivityFinderPage() {
           <p className="finder-eyebrow">vTune AIM</p>
           <h1>Sensitivity Finder</h1>
           <p>
-            Start with one of these Valorant sensitivity ranges. Later, this
-            page will run aim assessments and automatically recommend the best
-            option.
+            Compare lower, current, and higher Valorant sensitivities. The next
+            step will connect this flow to pointer-lock aim tests.
           </p>
         </header>
 
@@ -58,35 +68,63 @@ function SensitivityFinderPage() {
 
           <div>
             <span>Current eDPI</span>
-            <strong>{currentEdpi}</strong>
+            <strong>
+              {Math.round(settings.dpi * settings.valorantSensitivity)}
+            </strong>
           </div>
         </section>
 
         <section className="finder-grid">
-          {suggestions.map((suggestion) => (
-            <article className="finder-card" key={suggestion.label}>
-              <p>{suggestion.label}</p>
-              <h2>{suggestion.valorantSensitivity}</h2>
-              <span>{suggestion.edpi} eDPI</span>
+          {candidates.map((candidate) => (
+            <article
+              className={
+                activeCandidateId === candidate.id
+                  ? "finder-card is-active"
+                  : "finder-card"
+              }
+              key={candidate.id}
+            >
+              <p>{candidate.label}</p>
+              <h2>{candidate.valorantSensitivity}</h2>
+              <span>{candidate.edpi} eDPI</span>
 
               <button
                 type="button"
-                onClick={() =>
-                  handleUseSensitivity(
-                    suggestion.valorantSensitivity,
-                    suggestion.label,
-                  )
-                }
+                onClick={() => handleSelectCandidate(candidate.id)}
               >
-                Use this sens
+                Select for test
               </button>
-
-              {selectedLabel === suggestion.label && (
-                <small>Saved as current sensitivity.</small>
-              )}
             </article>
           ))}
         </section>
+
+        {finderStep !== "select" && activeCandidate && (
+          <section className="finder-test-panel">
+            <div>
+              <span>Selected Sens</span>
+              <strong>{activeCandidate.valorantSensitivity}</strong>
+              <p>{activeCandidate.edpi} eDPI</p>
+            </div>
+
+            <div>
+              <h2>Ready to test</h2>
+              <p>
+                This selected sensitivity will be used for the upcoming
+                pointer-lock assessment mode.
+              </p>
+            </div>
+
+            <button type="button" onClick={handleSaveCandidate}>
+              Save as current sens
+            </button>
+          </section>
+        )}
+
+        {finderStep === "saved" && (
+          <p className="finder-saved-message">
+            Saved. Your current Valorant sensitivity has been updated.
+          </p>
+        )}
       </div>
     </main>
   );
