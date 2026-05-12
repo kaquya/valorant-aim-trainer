@@ -1,0 +1,55 @@
+.home-page {
+  min-height: calc(100vh - 73px);
+  padding: 72px 24px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 70, 85, 0.2), transparent 34rem),
+    #0f172a;
+}
+
+.home-hero {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.home-eyebrow {
+  margin: 0 0 12px;
+  color: #ff4655;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.home-hero h1 {
+  max-width: 780px;
+  margin: 0;
+  font-size: clamp(2.8rem, 7vw, 6rem);
+  line-height: 0.95;
+}
+
+.home-hero p {
+  max-width: 660px;
+  color: #cbd5e1;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.home-actions a {
+  border-radius: 999px;
+  padding: 13px 20px;
+  background: #ff4655;
+  color: white;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.home-actions a:last-child {
+  background: rgba(148, 163, 184, 0.16);
+}
