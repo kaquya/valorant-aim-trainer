@@ -1,3 +1,5 @@
+import AimTestCanvas from "../components/AimTestCanvas";
+
 function TrainerPage() {
   return (
     <main className="settings-page">
@@ -6,10 +8,13 @@ function TrainerPage() {
           <p className="settings-eyebrow">vTune AIM</p>
           <h1>Trainer</h1>
           <p>
-            This page will contain Valorant-focused drills like microflicks,
-            precision taps, and reaction targets.
+            Practice simple target acquisition first. This will become the base
+            for Valorant-focused microflicks, precision taps, and reaction
+            drills.
           </p>
         </header>
+
+        <AimTestCanvas />
       </div>
     </main>
   );
