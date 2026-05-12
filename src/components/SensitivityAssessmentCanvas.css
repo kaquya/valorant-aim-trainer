@@ -4,14 +4,10 @@
   margin-top: 24px;
 }
 
-.sensitivity-assessment-toolbar,
-.sensitivity-assessment-stats {
-  display: grid;
-  gap: 14px;
-}
-
 .sensitivity-assessment-toolbar {
+  display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  gap: 14px;
   align-items: center;
   padding: 18px;
   border: 1px solid rgba(148, 163, 184, 0.22);
@@ -20,7 +16,9 @@
 }
 
 .sensitivity-assessment-stats {
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .sensitivity-assessment-toolbar div,
@@ -43,7 +41,7 @@
   display: block;
   margin-top: 6px;
   color: #f8fafc;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
 }
 
 .sensitivity-assessment-toolbar button {

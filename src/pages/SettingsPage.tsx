@@ -42,24 +42,40 @@ function SettingsPage() {
   function handleReset() {
     setSettings(defaultSettings);
     saveSettings(defaultSettings);
-    setSavedMessage("Settings reset.");
+    setSavedMessage("Settings reset to defaults.");
   }
 
   return (
     <main className="settings-page">
       <div className="settings-container">
-        <header className="settings-header">
-          <p className="settings-eyebrow">vTune AIM</p>
-          <h1>Settings</h1>
-          <p>
-            Configure your aim profile before running sensitivity assessments
-            and training sessions.
-          </p>
+        <header className="settings-hero">
+          <div>
+            <p className="settings-eyebrow">vTune AIM</p>
+            <h1>Settings</h1>
+            <p>
+              Configure your Valorant aim profile, training preferences, and
+              local session behavior.
+            </p>
+          </div>
+
+          <div className="settings-summary-card">
+            <span>Current eDPI</span>
+            <strong>{currentEdpi}</strong>
+            <p>
+              {settings.dpi} DPI × {settings.valorantSensitivity} sens
+            </p>
+          </div>
         </header>
 
-        <div className="settings-grid">
-          <section className="settings-card">
-            <h2>Aim Profile</h2>
+        <section className="settings-layout">
+          <div className="settings-card settings-main-card">
+            <div className="settings-card-header">
+              <div>
+                <span>Profile</span>
+                <h2>Aim Profile</h2>
+              </div>
+              <p>Used by the sens finder and trainer input scaling.</p>
+            </div>
 
             <label className="settings-field">
               <span>DPI</span>
@@ -106,22 +122,38 @@ function SettingsPage() {
               />
               <small>Used later for cm/360 recommendations.</small>
             </label>
+          </div>
+
+          <aside className="settings-card">
+            <div className="settings-card-header">
+              <div>
+                <span>Reference</span>
+                <h2>Starting Points</h2>
+              </div>
+              <p>Quick Valorant sens references based on your DPI.</p>
+            </div>
 
             <div className="sensitivity-preview">
-              <h3>Suggested starting points</h3>
-
               {sensitivitySuggestions.map((suggestion) => (
                 <div className="sensitivity-row" key={suggestion.label}>
-                  <span>{suggestion.label}</span>
+                  <div>
+                    <span>{suggestion.label}</span>
+                    <small>{suggestion.edpi} eDPI</small>
+                  </div>
                   <strong>{suggestion.valorantSensitivity}</strong>
-                  <small>{suggestion.edpi} eDPI</small>
                 </div>
               ))}
             </div>
-          </section>
+          </aside>
 
-          <section className="settings-card">
-            <h2>Training Preferences</h2>
+          <div className="settings-card">
+            <div className="settings-card-header">
+              <div>
+                <span>Trainer</span>
+                <h2>Training Preferences</h2>
+              </div>
+              <p>Controls default session behavior.</p>
+            </div>
 
             <label className="settings-field">
               <span>Training Duration</span>
@@ -150,7 +182,10 @@ function SettingsPage() {
                   updateSetting("showHitFeedback", event.target.checked)
                 }
               />
-              <span>Show hit feedback</span>
+              <div>
+                <span>Show hit feedback</span>
+                <small>Display visual feedback after target hits.</small>
+              </div>
             </label>
 
             <label className="settings-toggle">
@@ -161,22 +196,35 @@ function SettingsPage() {
                   updateSetting("enableSoundEffects", event.target.checked)
                 }
               />
-              <span>Enable sound effects</span>
+              <div>
+                <span>Enable sound effects</span>
+                <small>Play audio cues during training sessions.</small>
+              </div>
             </label>
-          </section>
-        </div>
+          </div>
+        </section>
 
-        <div className="settings-actions">
+        <footer className="settings-actions">
           {savedMessage && <p>{savedMessage}</p>}
 
-          <button className="settings-button" onClick={handleReset}>
-            Reset
-          </button>
+          <div>
+            <button
+              className="settings-button settings-button-secondary"
+              type="button"
+              onClick={handleReset}
+            >
+              Reset
+            </button>
 
-          <button className="settings-button" onClick={handleSave}>
-            Save Settings
-          </button>
-        </div>
+            <button
+              className="settings-button"
+              type="button"
+              onClick={handleSave}
+            >
+              Save Settings
+            </button>
+          </div>
+        </footer>
       </div>
     </main>
   );
