@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { loadSettings } from "../features/settings/settingsStorage";
 import { createTarget } from "../features/trainer/createTarget";
 import type { AimTarget, AimTestStats } from "../features/trainer/trainerTypes";
 import "./AimTestCanvas.css";
@@ -8,18 +9,48 @@ const CANVAS_HEIGHT = 520;
 
 function AimTestCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+const settingsRef = useRef(loadSettings());
+const settings = settingsRef.current;
+const sessionDuration = settings.trainingDuration;
+
   const [target, setTarget] = useState<AimTarget>(() =>
     createTarget(CANVAS_WIDTH, CANVAS_HEIGHT),
   );
+
   const [stats, setStats] = useState<AimTestStats>({
     hits: 0,
     misses: 0,
     totalClicks: 0,
   });
 
+  const [isSessionActive, setIsSessionActive] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number>(sessionDuration);
+  const [hasSessionFinished, setHasSessionFinished] = useState(false);
+
   useEffect(() => {
     drawCanvas();
-  }, [target, stats]);
+  }, [target, stats, isSessionActive]);
+
+  useEffect(() => {
+    if (!isSessionActive) {
+      return;
+    }
+
+    if (timeLeft <= 0) {
+      setIsSessionActive(false);
+      setHasSessionFinished(true);
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setTimeLeft((currentTime) => currentTime - 1);
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [isSessionActive, timeLeft]);
 
   function drawCanvas() {
     const canvas = canvasRef.current;
@@ -56,6 +87,18 @@ function AimTestCanvas() {
       context.stroke();
     }
 
+    if (!isSessionActive) {
+      context.fillStyle = "rgba(248, 250, 252, 0.72)";
+      context.font = "700 28px system-ui";
+      context.textAlign = "center";
+      context.fillText(
+        hasSessionFinished ? "Session finished" : "Press Start Session",
+        CANVAS_WIDTH / 2,
+        CANVAS_HEIGHT / 2,
+      );
+      return;
+    }
+
     context.beginPath();
     context.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
     context.fillStyle = "#ff4655";
@@ -67,7 +110,37 @@ function AimTestCanvas() {
     context.fill();
   }
 
+  function startSession() {
+    setStats({
+      hits: 0,
+      misses: 0,
+      totalClicks: 0,
+    });
+
+    setTarget(createTarget(CANVAS_WIDTH, CANVAS_HEIGHT));
+    setTimeLeft(sessionDuration);
+    setHasSessionFinished(false);
+    setIsSessionActive(true);
+  }
+
+  function resetSession() {
+    setStats({
+      hits: 0,
+      misses: 0,
+      totalClicks: 0,
+    });
+
+    setTarget(createTarget(CANVAS_WIDTH, CANVAS_HEIGHT));
+    setTimeLeft(sessionDuration);
+    setHasSessionFinished(false);
+    setIsSessionActive(false);
+  }
+
   function handleCanvasClick(event: React.MouseEvent<HTMLCanvasElement>) {
+    if (!isSessionActive) {
+      return;
+    }
+
     const canvas = canvasRef.current;
 
     if (!canvas) {
@@ -100,8 +173,29 @@ function AimTestCanvas() {
       ? 0
       : Math.round((stats.hits / stats.totalClicks) * 100);
 
+  const shotsPerMinute = Math.round(
+    (stats.totalClicks / sessionDuration) * 60,
+  );
+
   return (
     <section className="aim-test">
+      <div className="aim-test-toolbar">
+        <div>
+          <span>Time Left</span>
+          <strong>{timeLeft}s</strong>
+        </div>
+
+        <div className="aim-test-buttons">
+          <button type="button" onClick={startSession}>
+            Start Session
+          </button>
+
+          <button type="button" onClick={resetSession}>
+            Reset
+          </button>
+        </div>
+      </div>
+
       <div className="aim-test-stats">
         <div>
           <span>Hits</span>
@@ -117,6 +211,11 @@ function AimTestCanvas() {
           <span>Accuracy</span>
           <strong>{accuracy}%</strong>
         </div>
+
+        <div>
+          <span>Shots/min</span>
+          <strong>{shotsPerMinute}</strong>
+        </div>
       </div>
 
       <canvas
@@ -126,6 +225,16 @@ function AimTestCanvas() {
         height={CANVAS_HEIGHT}
         onClick={handleCanvasClick}
       />
+
+      {hasSessionFinished && (
+        <div className="aim-test-result">
+          <h2>Session Result</h2>
+          <p>
+            You hit <strong>{stats.hits}</strong> targets with{" "}
+            <strong>{accuracy}%</strong> accuracy.
+          </p>
+        </div>
+      )}
     </section>
   );
 }
