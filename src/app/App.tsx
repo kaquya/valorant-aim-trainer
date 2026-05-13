@@ -81,6 +81,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+           <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <HistoryPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </BrowserRouter>
