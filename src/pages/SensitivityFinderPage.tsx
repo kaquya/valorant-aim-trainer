@@ -29,9 +29,27 @@ function SensitivityFinderPage() {
     settings.dpi * settings.valorantSensitivity,
   );
 
-  function handleAssessmentComplete(result: AssessmentResult) {
+  async function handleAssessmentComplete(result: AssessmentResult) {
     setAssessmentResult(result);
     setSavedMessage("");
+
+    try {
+      await saveSensitivityAssessment({
+        dpi: settings.dpi,
+        sensitivity: settings.valorantSensitivity,
+        edpi: currentEdpi,
+        hits: result.hits,
+        misses: result.misses,
+        total_shots: result.totalShots,
+        accuracy: result.accuracy,
+        overflicks: result.overflicks,
+        underflicks: result.underflicks,
+        recommendation: result.recommendation,
+        recommended_sensitivity: result.recommendedSensitivity,
+      });
+    } catch {
+      // Assessment saving should not block the recommendation result.
+    }
   }
 
   function handleSaveRecommendedSensitivity() {
