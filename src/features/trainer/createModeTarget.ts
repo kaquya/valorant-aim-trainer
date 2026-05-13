@@ -24,7 +24,8 @@ export function createModeTarget(
   const centerY = height / 2;
 
   if (mode === "microflicks") {
-    const rangeMultiplier = difficulty === "hard" ? 1.2 : difficulty === "easy" ? 0.8 : 1;
+    const rangeMultiplier =
+      difficulty === "hard" ? 1.2 : difficulty === "easy" ? 0.8 : 1;
 
     return {
       id: crypto.randomUUID(),
@@ -42,8 +43,10 @@ export function createModeTarget(
 
   if (mode === "center-reset") {
     const angle = randomBetween(0, Math.PI * 2);
-    const minDistance = difficulty === "easy" ? 120 : difficulty === "hard" ? 190 : 160;
-    const maxDistance = difficulty === "easy" ? 210 : difficulty === "hard" ? 290 : 260;
+    const minDistance =
+      difficulty === "easy" ? 120 : difficulty === "hard" ? 190 : 160;
+    const maxDistance =
+      difficulty === "easy" ? 210 : difficulty === "hard" ? 290 : 260;
     const distance = randomBetween(minDistance, maxDistance);
 
     return {
@@ -56,7 +59,8 @@ export function createModeTarget(
 
   if (mode === "headline-taps") {
     const headLaneY = height * 0.42;
-    const laneHeight = difficulty === "easy" ? 54 : difficulty === "hard" ? 22 : 36;
+    const laneHeight =
+      difficulty === "easy" ? 54 : difficulty === "hard" ? 22 : 36;
 
     return {
       id: crypto.randomUUID(),
@@ -67,7 +71,8 @@ export function createModeTarget(
   }
 
   const side = Math.random() > 0.5 ? "left" : "right";
-  const angleWidth = difficulty === "easy" ? 150 : difficulty === "hard" ? 80 : 120;
+  const angleWidth =
+    difficulty === "easy" ? 150 : difficulty === "hard" ? 80 : 120;
 
   return {
     id: crypto.randomUUID(),
