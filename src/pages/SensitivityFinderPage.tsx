@@ -6,6 +6,7 @@ import {
 } from "../features/settings/settingsStorage";
 import type { UserSettings } from "../features/settings/settingsTypes";
 import "../styles/sensitivity-finder.css";
+import { saveSensitivityAssessment } from "../features/aim/aimApi";
 
 type AssessmentResult = {
   hits: number;
