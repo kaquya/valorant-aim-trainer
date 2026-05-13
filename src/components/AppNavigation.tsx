@@ -19,8 +19,12 @@ function AppNavigation() {
     <header className="navigation">
       <div className="navigation-container">
         <NavLink to="/" className="navigation-logo">
-          <span>vTune</span>
-          <strong>AIM</strong>
+          <img src="/icon.png" alt="vTune AIM" />
+
+          <div>
+            <span>vTune</span>
+            <strong>AIM</strong>
+          </div>
         </NavLink>
 
         <nav className="navigation-links">
