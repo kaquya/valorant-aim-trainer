@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { saveTrainerSession } from "../features/aim/aimApi";
 import { loadSettings } from "../features/settings/settingsStorage";
 import { createModeTarget } from "../features/trainer/createModeTarget";
 import {
@@ -11,7 +12,6 @@ import type {
   TrainerDifficulty,
 } from "../features/trainer/trainerTypes";
 import "../styles/aim-test-canvas.css";
-import { saveTrainerSession } from "../features/aim/aimApi";
 
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 520;
@@ -63,6 +63,11 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
     createModeTarget(CANVAS_WIDTH, CANVAS_HEIGHT, "microflicks", "normal"),
   );
 
+  const [nextMicroflickTarget, setNextMicroflickTarget] =
+    useState<AimTarget>(() =>
+      createModeTarget(CANVAS_WIDTH, CANVAS_HEIGHT, "microflicks", "normal"),
+    );
+
   const [crosshairPosition, setCrosshairPosition] = useState({
     x: CANVAS_WIDTH / 2,
     y: CANVAS_HEIGHT / 2,
@@ -84,6 +89,7 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
     drawCanvas();
   }, [
     target,
+    nextMicroflickTarget,
     stats,
     isSessionActive,
     selectedMode,
@@ -180,9 +186,44 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
     );
   }
 
+  function createMicroflickPair() {
+    return {
+      current: createModeTarget(
+        CANVAS_WIDTH,
+        CANVAS_HEIGHT,
+        "microflicks",
+        selectedDifficulty,
+      ),
+      next: createModeTarget(
+        CANVAS_WIDTH,
+        CANVAS_HEIGHT,
+        "microflicks",
+        selectedDifficulty,
+      ),
+    };
+  }
+
   function resetRunState(mode: TrainerModeId, difficulty: TrainerDifficulty) {
     setCenterResetStep("outer");
-    setTarget(createModeTarget(CANVAS_WIDTH, CANVAS_HEIGHT, mode, difficulty));
+
+    const nextTarget = createModeTarget(
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      mode,
+      difficulty,
+    );
+
+    setTarget(nextTarget);
+
+    setNextMicroflickTarget(
+      createModeTarget(
+        CANVAS_WIDTH,
+        CANVAS_HEIGHT,
+        "microflicks",
+        difficulty,
+      ),
+    );
+
     setIsSessionActive(false);
     setHasSessionFinished(false);
     setTimeLeft(sessionDuration);
@@ -217,6 +258,10 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
         CANVAS_HEIGHT / 2,
       );
       return;
+    }
+
+    if (selectedMode === "microflicks") {
+      drawMicroflickPreviewTarget(context);
     }
 
     drawTarget(context);
@@ -333,6 +378,33 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
     }
   }
 
+  function drawMicroflickPreviewTarget(context: CanvasRenderingContext2D) {
+    context.beginPath();
+    context.arc(
+      nextMicroflickTarget.x,
+      nextMicroflickTarget.y,
+      nextMicroflickTarget.radius * 0.82,
+      0,
+      Math.PI * 2,
+    );
+
+    context.strokeStyle = "rgba(255, 70, 85, 0.45)";
+    context.lineWidth = 2;
+    context.stroke();
+
+    context.beginPath();
+    context.arc(
+      nextMicroflickTarget.x,
+      nextMicroflickTarget.y,
+      nextMicroflickTarget.radius * 0.3,
+      0,
+      Math.PI * 2,
+    );
+
+    context.fillStyle = "rgba(255, 255, 255, 0.28)";
+    context.fill();
+  }
+
   function drawTarget(context: CanvasRenderingContext2D) {
     if (usesResetTarget(selectedMode) && centerResetStep === "center") {
       return;
@@ -395,7 +467,15 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
     const firstStep = usesResetTarget(selectedMode) ? "center" : "outer";
 
     setCenterResetStep(firstStep);
-    setTarget(createNextTarget(selectedMode, firstStep));
+
+    if (selectedMode === "microflicks") {
+      const pair = createMicroflickPair();
+      setTarget(pair.current);
+      setNextMicroflickTarget(pair.next);
+    } else {
+      setTarget(createNextTarget(selectedMode, firstStep));
+    }
+
     resetCrosshair();
 
     setTimeLeft(sessionDuration);
@@ -441,6 +521,20 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
     }));
 
     if (!isHit) return;
+
+    if (selectedMode === "microflicks") {
+      setTarget(nextMicroflickTarget);
+      setNextMicroflickTarget(
+        createModeTarget(
+          CANVAS_WIDTH,
+          CANVAS_HEIGHT,
+          "microflicks",
+          selectedDifficulty,
+        ),
+      );
+
+      return;
+    }
 
     if (usesResetTarget(selectedMode)) {
       setCenterResetStep("center");
