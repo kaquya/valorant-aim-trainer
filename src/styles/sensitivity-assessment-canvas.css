@@ -10,9 +10,9 @@
   gap: 14px;
   align-items: center;
   padding: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 22px;
-  background: rgba(15, 23, 42, 0.78);
+  background: rgba(15, 23, 42, 0.76);
 }
 
 .sensitivity-assessment-stats {
@@ -54,14 +54,10 @@
   cursor: pointer;
 }
 
-.sensitivity-assessment-toolbar button:hover {
-  filter: brightness(1.08);
-}
-
 .sensitivity-assessment-canvas {
   width: 100%;
   height: auto;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 24px;
   background: #020617;
   cursor: crosshair;

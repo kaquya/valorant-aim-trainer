@@ -1,15 +1,10 @@
 .settings-page {
   min-height: calc(100vh - 73px);
   padding: 48px 24px;
-  background:
-    radial-gradient(circle at top left, rgba(255, 70, 85, 0.18), transparent 34rem),
-    radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.08), transparent 28rem),
-    #0f172a;
-  color: #f8fafc;
 }
 
 .settings-container {
-  max-width: 1120px;
+  width: min(1120px, 100%);
   margin: 0 auto;
 }
 
@@ -38,16 +33,17 @@
 }
 
 .settings-hero p {
-  max-width: 720px;
+  max-width: 760px;
   margin: 18px 0 0;
   color: #cbd5e1;
   line-height: 1.7;
 }
 
 .settings-summary-card,
-.settings-card {
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  background: rgba(15, 23, 42, 0.78);
+.settings-card,
+.settings-actions {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.76);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
 }
 
@@ -88,7 +84,7 @@
   border-radius: 24px;
 }
 
-.settings-main-card {
+.settings-card-large {
   grid-row: span 2;
 }
 
@@ -145,8 +141,8 @@
 
 .settings-toggle {
   display: flex;
-  align-items: flex-start;
   gap: 12px;
+  align-items: flex-start;
   padding: 14px;
   margin-bottom: 14px;
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -166,35 +162,35 @@
   margin-top: 4px;
 }
 
-.sensitivity-preview {
+.settings-suggestion-list {
   display: grid;
   gap: 12px;
 }
 
-.sensitivity-row {
+.settings-suggestion {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
   align-items: center;
+  gap: 18px;
   padding: 14px;
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 18px;
   background: rgba(2, 6, 23, 0.38);
 }
 
-.sensitivity-row span {
+.settings-suggestion span {
   display: block;
   color: #e2e8f0;
   font-weight: 900;
 }
 
-.sensitivity-row small {
+.settings-suggestion small {
   display: block;
-  margin-top: 3px;
+  margin-top: 4px;
   color: #94a3b8;
 }
 
-.sensitivity-row strong {
+.settings-suggestion strong {
   font-size: 1.5rem;
 }
 
@@ -205,9 +201,7 @@
   gap: 18px;
   margin-top: 22px;
   padding: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 22px;
-  background: rgba(15, 23, 42, 0.62);
 }
 
 .settings-actions p {
@@ -231,10 +225,6 @@
   cursor: pointer;
 }
 
-.settings-button:hover {
-  filter: brightness(1.08);
-}
-
 .settings-button-secondary {
   background: rgba(148, 163, 184, 0.18);
 }
@@ -245,7 +235,7 @@
     grid-template-columns: 1fr;
   }
 
-  .settings-main-card {
+  .settings-card-large {
     grid-row: auto;
   }
 

@@ -7,8 +7,8 @@
 .trainer-controls-card,
 .aim-test-toolbar,
 .aim-test-result {
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.76);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
 }
 
@@ -136,10 +136,6 @@
   background: rgba(148, 163, 184, 0.18);
 }
 
-.aim-test-buttons button:hover {
-  filter: brightness(1.08);
-}
-
 .aim-test-stats {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -149,7 +145,7 @@
 .aim-test-canvas {
   width: 100%;
   height: auto;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 24px;
   background: #020617;
   cursor: crosshair;
