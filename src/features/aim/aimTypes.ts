@@ -58,3 +58,28 @@ export type SensitivityAssessmentPayload = {
   recommendation: "lower" | "higher" | "keep";
   recommended_sensitivity: number;
 };
+
+export type SensitivityAssessment = SensitivityAssessmentPayload & {
+  id: number;
+  created_at: string;
+};
+
+export type WarmupSession = {
+  id: number;
+  duration_seconds: number;
+  completed: boolean;
+  score: number;
+  created_at: string;
+};
+
+export type LevelRun = {
+  id: number;
+  level_id: string;
+  level_name: string;
+  score: number;
+  accuracy: number;
+  passed: boolean;
+  awarded_rank: string;
+  awarded_xp: number;
+  created_at: string;
+};

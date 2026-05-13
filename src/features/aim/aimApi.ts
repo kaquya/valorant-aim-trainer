@@ -3,10 +3,13 @@ import { getAccessToken } from "../auth/authTokenStorage";
 import type {
   AimSettingsPayload,
   BackendAimSettings,
+  LevelRun,
   Progression,
+  SensitivityAssessment,
   SensitivityAssessmentPayload,
   TrainerSession,
   TrainerSessionPayload,
+  WarmupSession,
 } from "./aimTypes";
 
 function requireToken() {
@@ -60,5 +63,23 @@ export function saveSensitivityAssessment(
     method: "POST",
     token: requireToken(),
     body: payload,
+  });
+}
+
+export function getSensitivityAssessments() {
+  return apiRequest<SensitivityAssessment[]>("/aim/sensitivity-assessments/", {
+    token: requireToken(),
+  });
+}
+
+export function getWarmupSessions() {
+  return apiRequest<WarmupSession[]>("/aim/warmup-sessions/", {
+    token: requireToken(),
+  });
+}
+
+export function getLevelRuns() {
+  return apiRequest<LevelRun[]>("/aim/level-runs/", {
+    token: requireToken(),
   });
 }
