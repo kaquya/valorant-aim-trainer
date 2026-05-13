@@ -10,6 +10,8 @@ import SettingsPage from "../pages/SettingsPage";
 import WarmupPage from "../pages/WarmupPage";
 import LevelsPage from "../pages/LevelsPage";
 import ProfilePage from "../pages/ProfilePage";
+import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
 
 import "../styles/app.css";
 
@@ -21,6 +23,9 @@ function App() {
 
         <Routes>
           <Route path="/" element={<HomePage />} />
+
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
           <Route
             path="/trainer"

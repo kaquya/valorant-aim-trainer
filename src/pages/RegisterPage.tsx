@@ -62,7 +62,7 @@ function RegisterPage() {
               type="text"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              placeholder="jeffrey"
+              placeholder="username"
               required
             />
           </label>
