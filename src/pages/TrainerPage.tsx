@@ -1,6 +1,6 @@
 import AimTestCanvas from "../components/AimTestCanvas";
 import { loadSettings } from "../features/settings/settingsStorage";
-import "./TrainerPage.css";
+import "../styles/trainer.css";
 
 function TrainerPage() {
   const settings = loadSettings();
@@ -17,9 +17,8 @@ function TrainerPage() {
             <p className="trainer-eyebrow">vTune AIM</p>
             <h1>Trainer</h1>
             <p>
-              Practice Valorant-focused drills using pointer-lock aiming,
-              sensitivity scaling, reset discipline, and head-level target
-              patterns.
+              Practice focused FPS mechanics using pointer-lock aiming,
+              sensitivity scaling, reset discipline, and target drills.
             </p>
           </div>
 

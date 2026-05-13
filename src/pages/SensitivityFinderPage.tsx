@@ -5,7 +5,7 @@ import {
   saveSettings,
 } from "../features/settings/settingsStorage";
 import type { UserSettings } from "../features/settings/settingsTypes";
-import "./SensitivityFinderPage.css";
+import "../styles/sensitivity-finder.css";
 
 type AssessmentResult = {
   hits: number;
@@ -43,7 +43,7 @@ function SensitivityFinderPage() {
 
     setSettings(updatedSettings);
     saveSettings(updatedSettings);
-    setSavedMessage("Recommended sensitivity saved to settings.");
+    setSavedMessage("Recommended sensitivity saved locally.");
   }
 
   function getRecommendationTitle(result: AssessmentResult) {
@@ -78,9 +78,9 @@ function SensitivityFinderPage() {
             <p className="finder-eyebrow">vTune AIM</p>
             <h1>Sensitivity Finder</h1>
             <p>
-              Run a focused reset-flick assessment with pointer-lock mouse
-              movement. vTune AIM analyzes your overflicks, underflicks, and
-              hit accuracy to recommend a better Valorant sensitivity.
+              Test your currently applied sensitivity with pointer-lock mouse
+              movement. The assessment tracks overflicks, underflicks, and
+              accuracy to recommend whether to lower, raise, or keep your sens.
             </p>
           </div>
 
@@ -103,13 +103,13 @@ function SensitivityFinderPage() {
           <article>
             <span>Step 02</span>
             <h2>Flick</h2>
-            <p>Move from center toward the target using pointer-lock input.</p>
+            <p>Move from center toward the target and click when aligned.</p>
           </article>
 
           <article>
             <span>Step 03</span>
-            <h2>Review</h2>
-            <p>Apply the recommended sensitivity after the assessment.</p>
+            <h2>Apply</h2>
+            <p>Save the recommended sensitivity to your local settings.</p>
           </article>
         </section>
 
@@ -119,9 +119,9 @@ function SensitivityFinderPage() {
               <span>Assessment Mode</span>
               <h2>Current Sens Diagnostic</h2>
               <p>
-                The test uses your currently saved Valorant sensitivity. It
-                measures movement before shots, so overflicks and underflicks
-                are not only based on missed clicks.
+                This test uses your saved sensitivity. Movement is analyzed
+                before your click, so the recommendation is based on actual
+                crosshair behavior, not only on missed shots.
               </p>
             </div>
 

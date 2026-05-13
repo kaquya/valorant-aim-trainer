@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import "./SensitivityAssessmentCanvas.css";
+import "../styles/sensitivity-assessment-canvas.css";
 
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 460;
@@ -117,7 +117,6 @@ function SensitivityAssessmentCanvas({
         };
 
         analyzeMovement(currentPosition, nextPosition);
-
         return nextPosition;
       });
     }
@@ -222,7 +221,6 @@ function SensitivityAssessmentCanvas({
     if (!context) return;
 
     context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
     context.fillStyle = "#020617";
     context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -289,10 +287,12 @@ function SensitivityAssessmentCanvas({
       0,
       Math.PI * 2,
     );
+
     context.strokeStyle =
       phase === "reset"
         ? "rgba(134, 239, 172, 0.9)"
         : "rgba(248, 250, 252, 0.28)";
+
     context.lineWidth = 2;
     context.stroke();
   }

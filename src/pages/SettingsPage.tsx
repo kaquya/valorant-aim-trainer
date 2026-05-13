@@ -9,7 +9,7 @@ import {
   calculateEdpi,
   getSensitivitySuggestions,
 } from "../features/sensitivity/calculateSensitivity";
-import "./SettingsPage.css";
+import "../styles/settings.css";
 
 function SettingsPage() {
   const [settings, setSettings] = useState<UserSettings>(() => loadSettings());
@@ -20,7 +20,7 @@ function SettingsPage() {
     settings.valorantSensitivity,
   );
 
-  const sensitivitySuggestions = getSensitivitySuggestions(settings.dpi);
+  const suggestions = getSensitivitySuggestions(settings.dpi);
 
   function updateSetting<K extends keyof UserSettings>(
     key: K,
@@ -36,7 +36,7 @@ function SettingsPage() {
 
   function handleSave() {
     saveSettings(settings);
-    setSavedMessage("Settings saved.");
+    setSavedMessage("Settings saved locally.");
   }
 
   function handleReset() {
@@ -53,28 +53,30 @@ function SettingsPage() {
             <p className="settings-eyebrow">vTune AIM</p>
             <h1>Settings</h1>
             <p>
-              Configure your Valorant aim profile, training preferences, and
-              local session behavior.
+              Configure your aim profile, sensitivity, DPI, and training
+              preferences. These values are used by the trainer and sensitivity
+              finder.
             </p>
           </div>
 
-          <div className="settings-summary-card">
+          <aside className="settings-summary-card">
             <span>Current eDPI</span>
             <strong>{currentEdpi}</strong>
             <p>
               {settings.dpi} DPI × {settings.valorantSensitivity} sens
             </p>
-          </div>
+          </aside>
         </header>
 
         <section className="settings-layout">
-          <div className="settings-card settings-main-card">
+          <article className="settings-card settings-card-large">
             <div className="settings-card-header">
               <div>
                 <span>Profile</span>
                 <h2>Aim Profile</h2>
               </div>
-              <p>Used by the sens finder and trainer input scaling.</p>
+
+              <p>Used for pointer-lock sensitivity scaling.</p>
             </div>
 
             <label className="settings-field">
@@ -122,37 +124,40 @@ function SettingsPage() {
               />
               <small>Used later for cm/360 recommendations.</small>
             </label>
-          </div>
+          </article>
 
-          <aside className="settings-card">
+          <article className="settings-card">
             <div className="settings-card-header">
               <div>
                 <span>Reference</span>
                 <h2>Starting Points</h2>
               </div>
-              <p>Quick Valorant sens references based on your DPI.</p>
+
+              <p>Suggested Valorant sensitivity ranges based on your DPI.</p>
             </div>
 
-            <div className="sensitivity-preview">
-              {sensitivitySuggestions.map((suggestion) => (
-                <div className="sensitivity-row" key={suggestion.label}>
+            <div className="settings-suggestion-list">
+              {suggestions.map((suggestion) => (
+                <div className="settings-suggestion" key={suggestion.label}>
                   <div>
                     <span>{suggestion.label}</span>
                     <small>{suggestion.edpi} eDPI</small>
                   </div>
+
                   <strong>{suggestion.valorantSensitivity}</strong>
                 </div>
               ))}
             </div>
-          </aside>
+          </article>
 
-          <div className="settings-card">
+          <article className="settings-card">
             <div className="settings-card-header">
               <div>
                 <span>Trainer</span>
-                <h2>Training Preferences</h2>
+                <h2>Preferences</h2>
               </div>
-              <p>Controls default session behavior.</p>
+
+              <p>Default behavior for future trainer sessions.</p>
             </div>
 
             <label className="settings-field">
@@ -182,6 +187,7 @@ function SettingsPage() {
                   updateSetting("showHitFeedback", event.target.checked)
                 }
               />
+
               <div>
                 <span>Show hit feedback</span>
                 <small>Display visual feedback after target hits.</small>
@@ -196,12 +202,13 @@ function SettingsPage() {
                   updateSetting("enableSoundEffects", event.target.checked)
                 }
               />
+
               <div>
                 <span>Enable sound effects</span>
-                <small>Play audio cues during training sessions.</small>
+                <small>Play sound cues during training sessions.</small>
               </div>
             </label>
-          </div>
+          </article>
         </section>
 
         <footer className="settings-actions">

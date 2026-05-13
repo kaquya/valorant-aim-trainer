@@ -10,7 +10,7 @@ import type {
   AimTestStats,
   TrainerDifficulty,
 } from "../features/trainer/trainerTypes";
-import "./AimTestCanvas.css";
+import "../styles/aim-test-canvas.css";
 
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 520;
