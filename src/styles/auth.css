@@ -72,3 +72,23 @@
   font-weight: 900;
   cursor: pointer;
 }
+
+.auth-message {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 70, 85, 0.35);
+  border-radius: 14px;
+  background: rgba(255, 70, 85, 0.12);
+  color: #fecdd3;
+  font-weight: 800;
+}
+
+.auth-footer-text {
+  margin: 20px 0 0;
+  color: #94a3b8;
+}
+
+.auth-footer-text a {
+  color: #ff4655;
+  font-weight: 900;
+}
