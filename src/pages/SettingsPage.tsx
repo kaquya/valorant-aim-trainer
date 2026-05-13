@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   defaultSettings,
   loadSettings,
@@ -9,11 +9,45 @@ import {
   calculateEdpi,
   getSensitivitySuggestions,
 } from "../features/sensitivity/calculateSensitivity";
+import {
+  getCloudAimSettings,
+  updateCloudAimSettings,
+} from "../features/aim/aimApi";
+import type { BackendAimSettings } from "../features/aim/aimTypes";
+import { isAuthenticated } from "../features/auth/authTokenStorage";
 import "../styles/settings.css";
+
+function mapBackendSettingsToUserSettings(
+  backendSettings: BackendAimSettings,
+): UserSettings {
+  return {
+    dpi: backendSettings.dpi,
+    valorantSensitivity: backendSettings.valorant_sensitivity,
+    mousepadSizeCm: backendSettings.mousepad_size_cm ?? "",
+    trainingDuration:
+      backendSettings.training_duration as UserSettings["trainingDuration"],
+    showHitFeedback: backendSettings.show_hit_feedback,
+    enableSoundEffects: backendSettings.enable_sound_effects,
+  };
+}
+
+function mapUserSettingsToBackendPayload(settings: UserSettings) {
+  return {
+    dpi: settings.dpi,
+    valorant_sensitivity: settings.valorantSensitivity,
+    mousepad_size_cm:
+      settings.mousepadSizeCm === "" ? null : settings.mousepadSizeCm,
+    training_duration: settings.trainingDuration,
+    show_hit_feedback: settings.showHitFeedback,
+    enable_sound_effects: settings.enableSoundEffects,
+  };
+}
 
 function SettingsPage() {
   const [settings, setSettings] = useState<UserSettings>(() => loadSettings());
   const [savedMessage, setSavedMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(isAuthenticated());
+  const [isSaving, setIsSaving] = useState(false);
 
   const currentEdpi = calculateEdpi(
     settings.dpi,
@@ -21,6 +55,33 @@ function SettingsPage() {
   );
 
   const suggestions = getSensitivitySuggestions(settings.dpi);
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      setIsLoading(false);
+      return;
+    }
+
+    async function loadCloudSettings() {
+      try {
+        const cloudSettings = await getCloudAimSettings();
+        const mappedSettings = mapBackendSettingsToUserSettings(cloudSettings);
+
+        setSettings(mappedSettings);
+        saveSettings(mappedSettings);
+      } catch (error) {
+        setSavedMessage(
+          error instanceof Error
+            ? error.message
+            : "Could not load cloud settings.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadCloudSettings();
+  }, []);
 
   function updateSetting<K extends keyof UserSettings>(
     key: K,
@@ -34,15 +95,56 @@ function SettingsPage() {
     setSavedMessage("");
   }
 
-  function handleSave() {
-    saveSettings(settings);
-    setSavedMessage("Settings saved locally.");
+  async function handleSave() {
+    setIsSaving(true);
+    setSavedMessage("");
+
+    try {
+      saveSettings(settings);
+
+      if (isAuthenticated()) {
+        await updateCloudAimSettings(mapUserSettingsToBackendPayload(settings));
+        setSavedMessage("Settings saved to your account.");
+      } else {
+        setSavedMessage("Settings saved locally.");
+      }
+    } catch (error) {
+      setSavedMessage(
+        error instanceof Error ? error.message : "Could not save settings.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  function handleReset() {
+  async function handleReset() {
     setSettings(defaultSettings);
     saveSettings(defaultSettings);
+
+    if (isAuthenticated()) {
+      try {
+        await updateCloudAimSettings(
+          mapUserSettingsToBackendPayload(defaultSettings),
+        );
+        setSavedMessage("Settings reset and saved to your account.");
+      } catch {
+        setSavedMessage("Settings reset locally, but cloud save failed.");
+      }
+
+      return;
+    }
+
     setSavedMessage("Settings reset to defaults.");
+  }
+
+  if (isLoading) {
+    return (
+      <main className="settings-page">
+        <div className="settings-container">
+          <p>Loading settings...</p>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -54,8 +156,7 @@ function SettingsPage() {
             <h1>Settings</h1>
             <p>
               Configure your aim profile, sensitivity, DPI, and training
-              preferences. These values are used by the trainer and sensitivity
-              finder.
+              preferences. Logged-in users save these settings to the cloud.
             </p>
           </div>
 
@@ -133,7 +234,7 @@ function SettingsPage() {
                 <h2>Starting Points</h2>
               </div>
 
-              <p>Suggested Valorant sensitivity ranges based on your DPI.</p>
+              <p>Suggested FPS sensitivity ranges based on your DPI.</p>
             </div>
 
             <div className="settings-suggestion-list">
@@ -227,8 +328,9 @@ function SettingsPage() {
               className="settings-button"
               type="button"
               onClick={handleSave}
+              disabled={isSaving}
             >
-              Save Settings
+              {isSaving ? "Saving..." : "Save Settings"}
             </button>
           </div>
         </footer>
