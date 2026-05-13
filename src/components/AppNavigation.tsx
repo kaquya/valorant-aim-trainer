@@ -33,6 +33,7 @@ function AppNavigation() {
           <NavLink to="/sensitivity">Sensitivity</NavLink>
           <NavLink to="/warmup">Warmup</NavLink>
           <NavLink to="/levels">Levels</NavLink>
+          <NavLink to="/history">History</NavLink>
           <NavLink to="/settings">Settings</NavLink>
         </nav>
 
