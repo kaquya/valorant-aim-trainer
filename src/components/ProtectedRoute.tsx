@@ -1,13 +1,14 @@
+import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { isAuthenticated } from "../features/auth/authStorage";
+import { isAuthenticated } from "../features/auth/authTokenStorage";
 
 type ProtectedRouteProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (!isAuthenticated()) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;

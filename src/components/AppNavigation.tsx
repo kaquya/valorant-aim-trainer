@@ -1,25 +1,17 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
+  clearAuthTokens,
   isAuthenticated,
-  login,
-  logout,
-} from "../features/auth/authStorage";
+} from "../features/auth/authTokenStorage";
 import "../styles/navigation.css";
 
 function AppNavigation() {
   const navigate = useNavigate();
   const authenticated = isAuthenticated();
 
-  function handleAuthAction() {
-    if (authenticated) {
-      logout();
-      navigate("/");
-      window.location.reload();
-      return;
-    }
-
-    login();
-    navigate("/profile");
+  function handleLogout() {
+    clearAuthTokens();
+    navigate("/");
     window.location.reload();
   }
 
@@ -41,17 +33,27 @@ function AppNavigation() {
         </nav>
 
         <div className="navigation-auth">
-          {authenticated && <NavLink to="/profile">Profile</NavLink>}
+          {authenticated ? (
+            <>
+              <NavLink to="/profile">Profile</NavLink>
 
-          {!authenticated && <NavLink to="/register">Register</NavLink>}
+              <button
+                type="button"
+                className="navigation-login-button"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink to="/login">Login</NavLink>
 
-          <button
-            type="button"
-            className="navigation-login-button"
-            onClick={handleAuthAction}
-          >
-            {authenticated ? "Logout" : "Login"}
-          </button>
+              <NavLink to="/register" className="navigation-register">
+                Register
+              </NavLink>
+            </>
+          )}
         </div>
       </div>
     </header>
