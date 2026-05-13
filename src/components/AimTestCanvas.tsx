@@ -11,6 +11,7 @@ import type {
   TrainerDifficulty,
 } from "../features/trainer/trainerTypes";
 import "../styles/aim-test-canvas.css";
+import { saveTrainerSession } from "../features/aim/aimApi";
 
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 520;
@@ -139,9 +140,7 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
     if (!isSessionActive) return;
 
     if (timeLeft <= 0) {
-      setIsSessionActive(false);
-      setHasSessionFinished(true);
-      document.exitPointerLock();
+      finishSession();
       return;
     }
 
@@ -363,6 +362,31 @@ function AimTestCanvas({ activeSensitivity, activeEdpi }: AimTestCanvasProps) {
     context.moveTo(crosshairPosition.x, crosshairPosition.y - 10);
     context.lineTo(crosshairPosition.x, crosshairPosition.y + 10);
     context.stroke();
+  }
+
+  async function finishSession() {
+    setIsSessionActive(false);
+    setHasSessionFinished(true);
+    document.exitPointerLock();
+
+    try {
+      await saveTrainerSession({
+        mode:
+          TRAINER_MODES.find((mode) => mode.id === selectedMode)?.name ??
+          selectedMode,
+        difficulty: DIFFICULTY_LABELS[selectedDifficulty],
+        hits: stats.hits,
+        misses: stats.misses,
+        total_clicks: stats.totalClicks,
+        accuracy,
+        shots_per_minute: shotsPerMinute,
+        score,
+        sensitivity: displayedSensitivity,
+        edpi: displayedEdpi,
+      });
+    } catch {
+      // Session saving should never break the trainer.
+    }
   }
 
   function startSession() {
